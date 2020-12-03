@@ -8,7 +8,7 @@ import {
   hasMany,
   belongsTo,
   Response,
-  Factory
+  Factory,
 } from "miragejs";
 
 const CATEGORIES = [
@@ -21,7 +21,7 @@ const CATEGORIES = [
   "پس انداز",
   "تفریح",
   "شخصی (آموزشی)",
-  "مختلف"
+  "مختلف",
 ];
 const START_DATE = moment("1399/08/01", "jYYYY/jMM/jDD")
   .startOf("day")
@@ -30,36 +30,36 @@ const START_DATE = moment("1399/08/01", "jYYYY/jMM/jDD")
 createServer({
   models: {
     user: Model.extend({
-      entries: hasMany()
+      entries: hasMany(),
     }),
     category: Model.extend({
-      entries: hasMany()
+      entries: hasMany(),
     }),
     entry: Model.extend({
       user: belongsTo(),
-      category: belongsTo()
-    })
+      category: belongsTo(),
+    }),
   },
   serializers: {
     application: RestSerializer.extend({
-      embed: true
+      embed: true,
     }),
     user: RestSerializer.extend({
       root: false,
       embed: true,
       attrs: ["id", "name", "userName"],
-      include: ["entries"]
+      include: ["entries"],
     }),
     category: RestSerializer.extend({
       root: false,
-      embed: true
+      embed: true,
       // include: ["entries"]
     }),
     entry: RestSerializer.extend({
       root: false,
       embed: true,
-      include: ["category"]
-    })
+      include: ["category"],
+    }),
   },
   factories: {
     user: Factory.extend({
@@ -74,28 +74,28 @@ createServer({
         faker.locale = "en";
         return faker.internet.userName();
       },
-      password: "123456"
+      password: "123456",
     }),
     category: Factory.extend({
       name(i) {
         return CATEGORIES[i % 10];
-      }
+      },
     }),
     entry: Factory.extend({
       title() {
         faker.locale = "fa";
         return faker.random.words();
-      }
-    })
+      },
+    }),
   },
   seeds(server) {
     const categories = server.createList("category", 10);
-    server.createList("user", 5).forEach(user => {
-      server.createList("entry", 20, { user }).forEach(entry =>
+    server.createList("user", 5).forEach((user) => {
+      server.createList("entry", 20, { user }).forEach((entry) =>
         entry.update({
           category: categories[Math.floor(Math.random() * 1000) % 10],
           amount: faker.random.number(),
-          date: moment(START_DATE).add(random(29), "days").valueOf()
+          date: moment(START_DATE).add(random(29), "days").valueOf(),
         })
       );
     });
@@ -107,6 +107,7 @@ createServer({
       if (!!user) {
         return new Response(200, {}, { user, token: generateToken(user) });
       }
+      console.log("User Not Found");
       return new Response(
         404,
         {},
@@ -138,9 +139,9 @@ createServer({
     });
     this.get("/entries/:timestamp", (schema, request) => {
       const date = moment(+request.params.timestamp);
-      return schema.entries.where(entry => date.isSame(entry.date, "day"));
+      return schema.entries.where((entry) => date.isSame(entry.date, "day"));
     });
-  }
+  },
 });
 
 function generateToken(user) {
